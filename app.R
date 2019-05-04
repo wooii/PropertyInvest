@@ -164,7 +164,8 @@ income_tax_foreign <- function(x) {
 ui <- fluidPage(
   
   # Application title.
-  titlePanel("The expected rate of return on an investment property"),
+  titlePanel("The expected annualized rate of return on an investment 
+             property"),
   
   # Sidebar.
   sidebarLayout(
@@ -174,7 +175,7 @@ ui <- fluidPage(
                   "Sale price of the property, AUD.",
                   min = 0,
                   max = 3000000,
-                  value = 500000),
+                  value = 600000),
       checkboxInput("foreign.investor",
                     "Tick if the investor is a foreign investor."),
       checkboxInput("investment",
@@ -229,7 +230,7 @@ ui <- fluidPage(
                   price of the property.",
                   min = 0.01,
                   max = 0.1,
-                  value = 0.05),
+                  value = 0.04),
       sliderInput("hold.cost.to.price",
                   "The ratio of the total cost of holding the property (such as
                   the management fees and coucil rates and etc) to the market 
@@ -247,20 +248,40 @@ ui <- fluidPage(
     
     
     mainPanel(
-      p("It is not easy to make a decision on an investment in the property
-      market. There are at least 15 variables that may determine the success on
-        an investment. These variables have been used in the calculation for
-        the expected annulized rate of return on an investment property in this
-        study."),
-      p("By manipulating these variables, we can get a rough idea on how the 
-      investment may return based on all these given assumptions."),
-      p("The calculation is simple. ")
-      h3("The annulized expected rate of return on an investment property"),
       plotOutput("Plots"),
-      p("The net return is calculated based on the rental gain when
-        holding the property."),
-      p("The related tax and costs have been accounted and adjusted based on 
-        the income of the investor.")
+      strong("Figure 1. The expected annualized rate of return on an investment
+             property."),
+      br(),
+      br(),
+      p("It is not easy to make a decision on an investment in the property 
+        market. There are at least 15 variables that may determine the success
+        on such an investment."),
+      p("The expected annualized rate of return on an investment property can
+        be calculated based on the manipulatable variables as shown in 
+        Figure 1. A decision can be made by assessing if the expected
+        annualized rate of return is acceptable. The calculation is described
+        in the following steps."),
+      tags$ol(
+        tags$li("Calculate the net income by subtracting the annual loan 
+                repayment, holding cost and leasing cost from the annual gross
+                rental income."), 
+        tags$li("Calculate the capital gain by subtracting the sale cost, 
+                previous purchasing price and purchasing costs from the 
+                expected sale price."), 
+        tags$li("Calculate all the invested capital (including the initial
+                investment and the ongoing repayment to the capital) till the
+                year marked on the x-axis."),
+        tags$li("For each year on the x-axis, sum all net income from year 0 to
+                the year marked on the x-axis."), 
+        tags$li("For the annualized rate of return from only the accumulated 
+                net rental income: divide the value calculated from step 4 by 
+                the value calculated from step 3."), 
+        tags$li("For the annualized rate of return from accumulated net rental 
+                income + capital gain: add the values calculated from step 2 
+                and 4, and then divide it by the number calculated from
+                step 3.")),
+      p("For more details, please refer to the source code of this app below"),
+      a(href = "https://github.com/wooii/PropertyInvest", "GitHub")
     )
   )
 )
@@ -363,9 +384,12 @@ server <- function(input, output) {
     y.breaks <- c(seq(from = round(min(df$rr.m2), digits = 2), 
                       to = round(max(df$rr.m2), digits = 2), 
                       by = 0.02), 0)
-    ggplot(df, aes(x = years, y = rr.m1, colour = "net income")) + geom_point() + 
+    ggplot(df, aes(x = years, y = rr.m1, 
+                   colour = "from accumulated net rental income")) +
+      geom_point() + 
       geom_point(aes(y = rr.m2, 
-                     colour = "accumulated net income + capital gain")) +
+                     colour = "from accumulated net rental income + capital
+                     gain")) +
       ylab("Annualized rate of return (%)") + xlab("Years") +
       scale_x_continuous(breaks = x.breaks) +
       scale_y_continuous(labels = scales::percent, 
