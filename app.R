@@ -126,8 +126,13 @@ mortgage <- function(loan = 500000,
     pay <- loan*r
     remaining.principal <- loan
   } else {
-    pay <- loan*r*(1 + r)^n / ((1 + r)^n - 1)
-    remaining.principal <- loan*(1 + r)^n.paid - (pay/r)*((1 + r)^n.paid - 1)
+    if (r == 0) {
+      pay <- loan/n
+      remaining.principal <- loan - pay*n.paid
+    } else {
+      pay <- loan*r*(1 + r)^n / ((1 + r)^n - 1)
+      remaining.principal <- loan*(1 + r)^n.paid - (pay/r)*((1 + r)^n.paid - 1)
+    }
   }
   y <- data.frame(repayment = pay, remaining.principal)
   return(y)
@@ -164,18 +169,18 @@ income_tax_foreign <- function(x) {
 ui <- fluidPage(
   
   # Application title.
-  titlePanel("The expected annualized rate of return on an investment 
-             property"),
+  titlePanel("Simulation of the expected annualized rate of return on an
+             investment property"),
   
   # Sidebar.
   sidebarLayout(
     sidebarPanel(
       h3("The sale price and tax related variables"),  
-      sliderInput("price",
-                  "Sale price of the property, AUD.",
-                  min = 0,
-                  max = 3000000,
-                  value = 600000),
+      numericInput("price",
+                   "Sale price of the property, AUD.",
+                   value = 600000,
+                   min = 0,
+                   step = 10000),
       checkboxInput("foreign.investor",
                     "Tick if the investor is a foreign investor."),
       checkboxInput("investment",
@@ -187,26 +192,28 @@ ui <- fluidPage(
       br(),
       h3("The mortgage related variables"),
       sliderInput("deposit.ratio",
-                  "Ratio of the initial deposit to the total sale price.",
-                  min = 0,
+                  "Ratio of the initial deposit to the total sale price of the
+                  property.",
+                  value = 0.2,
+                  min = 0.05,
                   max = 1,
-                  value = 0.2),
+                  step = 0.01),
       sliderInput("loan.rate",
                   "Loan interest rate (use decimal instead of percentage).",
-                  min = 0.01,
-                  max = 0.1,
-                  value = 0.05),
+                  value = 0.05,
+                  min = 0,
+                  max = 0.12,
+                  step = 0.001),
       sliderInput("loan.term",
                   "Length of the home loan, years.",
+                  value = 25,
                   min = 1,
                   max = 30,
-                  value = 25),
-      sliderInput("payment.frequency",
-                  "Repayment frequency per year, select 12 for Monthly, and 
-                  select 52 for weekly.",
-                  min = 12,
-                  max = 52,
-                  value = 12),
+                  step = 1),
+      selectInput("payment.frequency",
+                  "Repayment frequency per year, select 12 for Monthly, 26 for
+                  fortnightly or 52 for weekly.",
+                  choices = c(12, 26, 52)),
       checkboxInput("interest.only",
                     "Tick if the loan is to pay the interest only, untick if 
                     the loan is to pay the fixed principal and interest."),
@@ -215,35 +222,40 @@ ui <- fluidPage(
       sliderInput("expected.rate.of.appreciation",
                   "The expected annual rate of appreciation of the property 
                   price.",
+                  value = 0.04,
                   min = 0,
                   max = 0.15,
-                  value = 0.04),
+                  step = 0.001),
       sliderInput("sale.cost.to.price",
                   "The ratio of the cost of selling the property (such as the 
-                  stamp duty tax and the commision fees paid to the real estate 
-                  agents) to the market price of the property, .",
+                  stamp duty tax and the commission fees paid to the real
+                  estate agents) to the market price of the property.",
+                  value = 0.05,
                   min = 0.01,
                   max = 0.1,
-                  value = 0.05),
+                  step = 0.001),
       sliderInput("rent.to.price",
                   "The ratio of the gross annual rental income to the market
                   price of the property.",
+                  value = 0.04,
                   min = 0.01,
                   max = 0.1,
-                  value = 0.04),
+                  step = 0.001),
       sliderInput("hold.cost.to.price",
                   "The ratio of the total cost of holding the property (such as
-                  the management fees and coucil rates and etc) to the market 
+                  the management fees and council rates and etc) to the market 
                   price of the property.",
+                  value = 0.01,
                   min = 0.005,
                   max = 0.03,
-                  value = 0.01),
+                  step = 0.001),
       sliderInput("rent.cost.to.rent",
                   "The ratio of the cost that is paid to the real estate agents
                   for leasing the property to the gross annual rental income.",
+                  value = 0.085,
                   min = 0,
                   max = 0.12,
-                  value = 0.09)
+                  step = 0.001)
     ),
     
     
@@ -253,21 +265,22 @@ ui <- fluidPage(
              property."),
       br(),
       br(),
-      p("It is not easy to make a decision on an investment in the property 
-        market. There are at least 15 variables that may determine the success
-        on such an investment."),
-      p("The expected annualized rate of return on an investment property can
-        be calculated based on the manipulatable variables as shown in 
-        Figure 1. A decision can be made by assessing if the expected
-        annualized rate of return is acceptable. The calculation is described
-        in the following steps."),
+      p("The simulation of the expected annualized rate of return on an
+        investment property (Figure 1) may help an investor to make better
+        decisions in the property market. There are at least 15 manipulable 
+        variables as listed here that may affect the outcome from such an 
+        investment."),
+      p("Manipulating the variables in the input panel will generate a new
+        simulaiton accordingly. The input values will be passed on to the
+        server for making calculations, which are described in the following
+        steps."),
       tags$ol(
         tags$li("Calculate the net income by subtracting the annual loan 
                 repayment, holding cost and leasing cost from the annual gross
                 rental income."), 
         tags$li("Calculate the capital gain by subtracting the sale cost, 
                 previous purchasing price and purchasing costs from the 
-                expected sale price."), 
+                expected future sale price."), 
         tags$li("Calculate all the invested capital (including the initial
                 investment and the ongoing repayment to the capital) till the
                 year marked on the x-axis."),
@@ -278,10 +291,11 @@ ui <- fluidPage(
                 the value calculated from step 3."), 
         tags$li("For the annualized rate of return from accumulated net rental 
                 income + capital gain: add the values calculated from step 2 
-                and 4, and then divide it by the number calculated from
+                and 4, and then divide it by the value calculated from
                 step 3.")),
       p("For more details, please refer to the source code of this app below"),
-      a(href = "https://github.com/wooii/PropertyInvest", "GitHub")
+      a(href = "https://github.com/wooii/PropertyInvest", 
+        "https://github.com/wooii/PropertyInvest")
     )
   )
 )
@@ -301,7 +315,7 @@ server <- function(input, output) {
     deposit.ratio <- input$deposit.ratio
     loan.rate <- input$loan.rate 
     loan.term <- input$loan.term
-    payment.frequency <- input$payment.frequency
+    payment.frequency <- as.numeric(input$payment.frequency)
     interest.only <- input$interest.only
     era <- input$expected.rate.of.appreciation
     scp <- input$sale.cost.to.price
@@ -309,11 +323,11 @@ server <- function(input, output) {
     hcp <- input$hold.cost.to.price 
     rcp <- input$rent.cost.to.rent
     
-    # Use these parameters to tune all the function in the server.
+    # These parameters is used to tune all the function in the server.
     if (F) {
       price = 600000
-      deposit.ratio = 0.2
-      era = 0.04
+      deposit.ratio = 0.1
+      era = 0.001
       loan.rate = 0.05
       loan.term = 25
       payment.frequency = 12
@@ -327,7 +341,6 @@ server <- function(input, output) {
       rcp = 0.09
       scp = 0.05
     }
-    
     
     # Initial investment.
     invest0 <- initial_invest(price = price, 
@@ -380,22 +393,20 @@ server <- function(input, output) {
     
     # Output plot.
     df <- data.frame(years, rr.a1, rr.m1, rr.a2, rr.m2)
+    df[is.na(df)] <- -1 # rr.m1 may be NA due to rr.a1 < -1.
     x.breaks <- c(seq(from = 0, to = loan.term, by = 2), loan.term)
     y.breaks <- c(seq(from = round(min(df$rr.m2), digits = 2), 
                       to = round(max(df$rr.m2), digits = 2), 
                       by = 0.02), 0)
     ggplot(df, aes(x = years, y = rr.m1, 
-                   colour = "from accumulated net rental income")) +
-      geom_point() + 
+                   colour = "accumulated net rental income")) + geom_point() + 
       geom_point(aes(y = rr.m2, 
-                     colour = "from accumulated net rental income + capital
-                     gain")) +
+                     colour = "accumulated net rental income + capital gain")) +
       ylab("Annualized rate of return (%)") + xlab("Years") +
       scale_x_continuous(breaks = x.breaks) +
-      scale_y_continuous(labels = scales::percent, 
-                         breaks = y.breaks) +
-      theme(legend.position = "bottom")
-    
+      scale_y_continuous(labels = scales::percent, breaks = y.breaks) +
+      theme(legend.position = c(0.5, 0.1), legend.direction = "vertical",
+            legend.background = element_blank())
   })
 }
 
