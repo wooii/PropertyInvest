@@ -293,7 +293,7 @@ ui <- fluidPage(
                 income + capital gain: add the values calculated from step 2 
                 and 4, and then divide it by the value calculated from
                 step 3.")),
-      p("For more details, please refer to the source code of this app below"),
+      p("For more details, please refer to the source code of this app below."),
       a(href = "https://github.com/wooii/PropertyInvest", 
         "https://github.com/wooii/PropertyInvest")
     )
