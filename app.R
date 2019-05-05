@@ -1,6 +1,7 @@
-# This R script provides the estimated rate of return on an investment property
-# based on the given parameters and the expected rate of appreciation of the
-# property. It produces a html file with interactive graphs using Shiny.
+# This R script builds a interactive web app using Shiny. The app provides the 
+# simulation of the rate of return on an investment property based on the input
+# variables such as payable tax, mortgage, expected rental income, expected
+# rate of appreciation of the property, and etc. 
 
 # Author: Chenfeng Chen
 
@@ -205,7 +206,7 @@ ui <- fluidPage(
                   max = 12,
                   step = 0.1),
       sliderInput("loan.term",
-                  "Length of the home loan, years.",
+                  "Length of the home loan (years).",
                   value = 25,
                   min = 1,
                   max = 30,
@@ -229,14 +230,14 @@ ui <- fluidPage(
       sliderInput("sale.cost.to.price",
                   "Percentage of the cost of selling the property (such as the 
                   stamp duty tax and the commission fees paid to the real
-                  estate agents) to the market price of the property.",
+                  estate agents) to the market price of the property (%).",
                   value = 5,
                   min = 1,
                   max = 10,
                   step = 0.1),
       sliderInput("rent.to.price",
                   "Percentage of the gross annual rental income to the market
-                  price of the property.",
+                  price of the property (%).",
                   value = 4,
                   min = 0,
                   max = 15,
@@ -244,14 +245,15 @@ ui <- fluidPage(
       sliderInput("hold.cost.to.price",
                   "Percentage of the total cost of holding the property (such
                   as the management fees and council rates and etc) to the  
-                  market price of the property.",
+                  market price of the property (%).",
                   value = 1,
-                  min = 0.3,
+                  min = 0,
                   max = 3,
                   step = 0.1),
       sliderInput("rent.cost.to.rent",
                   "Percentage of the cost that is paid to the real estate agent
-                  for leasing the property to the gross annual rental income.",
+                  for leasing the property to the gross annual rental 
+                  income (%).",
                   value = 8.5,
                   min = 0,
                   max = 12,
