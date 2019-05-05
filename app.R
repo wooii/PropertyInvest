@@ -402,10 +402,11 @@ server <- function(input, output) {
                    colour = "accumulated net rental income")) + geom_point() + 
       geom_point(aes(y = rr.m2, 
                      colour = "accumulated net rental income + capital gain")) +
-      ylab("Annualized rate of return (%)") + xlab("Years") +
+      ylab("Annualized rate of return") + xlab("Years") +
       scale_x_continuous(breaks = x.breaks) +
       scale_y_continuous(labels = scales::percent, breaks = y.breaks) +
       theme(legend.position = c(0.5, 0.1), legend.direction = "vertical",
+            legend.title = element_blank(),
             legend.background = element_blank())
   })
 }
