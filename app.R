@@ -125,7 +125,7 @@ mortgage <- function(loan = 500000,
   
   if (interest.only) {
     pay <- loan*r
-    remaining.principal <- loan
+    remaining.principal <- rep(loan, length(n.paid))
   } else {
     if (r == 0) {
       pay <- loan/n
@@ -179,7 +179,7 @@ ui <- fluidPage(
       h3("Sale price and tax"),  
       numericInput("price",
                    "Sale price of the property (AUD).",
-                   value = 600000,
+                   value = 700000,
                    min = 0,
                    step = 10000),
       checkboxInput("foreign.investor",
@@ -327,12 +327,12 @@ server <- function(input, output) {
     # These parameters is used to tune all the function in the server.
     if (F) {
       price = 600000
-      deposit.ratio = 0.1
-      era = 0.001
+      deposit.ratio = 0.2
+      era = 0.04
       loan.rate = 0.05
       loan.term = 25
       payment.frequency = 12
-      interest.only = F
+      interest.only = T
       foreign.investor = F
       investment = T
       first.home = F
