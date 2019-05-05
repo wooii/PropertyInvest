@@ -169,15 +169,15 @@ income_tax_foreign <- function(x) {
 ui <- fluidPage(
   
   # Application title.
-  titlePanel("Simulation of the expected annualized rate of return on an
-             investment property"),
+  titlePanel("Simulation of the annualized rate of return on an investment
+             property"),
   
   # Sidebar.
   sidebarLayout(
     sidebarPanel(
-      h3("The sale price and tax related variables"),  
+      h3("Sale price and tax"),  
       numericInput("price",
-                   "Sale price of the property, AUD.",
+                   "Sale price of the property (AUD).",
                    value = 600000,
                    min = 0,
                    step = 10000),
@@ -190,20 +190,20 @@ ui <- fluidPage(
       checkboxInput("new.home",
                     "Tick if the property is a newly built home."),
       br(),
-      h3("The mortgage related variables"),
+      h3("Mortgage"),
       sliderInput("deposit.ratio",
-                  "Ratio of the initial deposit to the total sale price of the
-                  property.",
-                  value = 0.2,
-                  min = 0.05,
-                  max = 1,
-                  step = 0.01),
+                  "Percentage of the initial deposit to the total sale price of
+                  the property (%).",
+                  value = 20,
+                  min = 5,
+                  max = 100,
+                  step = 1),
       sliderInput("loan.rate",
-                  "Loan interest rate (use decimal instead of percentage).",
-                  value = 0.05,
+                  "Loan interest rate (%).",
+                  value = 5,
                   min = 0,
-                  max = 0.12,
-                  step = 0.001),
+                  max = 12,
+                  step = 0.1),
       sliderInput("loan.term",
                   "Length of the home loan, years.",
                   value = 25,
@@ -211,65 +211,64 @@ ui <- fluidPage(
                   max = 30,
                   step = 1),
       selectInput("payment.frequency",
-                  "Repayment frequency per year, select 12 for Monthly, 26 for
-                  fortnightly or 52 for weekly.",
+                  "Repayment frequency per year, select monthly (12), 
+                  fortnightly (26) or weekly (52).",
                   choices = c(12, 26, 52)),
       checkboxInput("interest.only",
                     "Tick if the loan is to pay the interest only, untick if 
                     the loan is to pay the fixed principal and interest."),
       br(),
-      h3("The expected future sale and rental related variables"),
+      h3("Expected future sale price and rental income"),
       sliderInput("expected.rate.of.appreciation",
-                  "The expected annual rate of appreciation of the property 
-                  price.",
-                  value = 0.04,
+                  "Expected annual rate of appreciation of the property 
+                  price (%).",
+                  value = 4,
                   min = 0,
-                  max = 0.15,
-                  step = 0.001),
+                  max = 12,
+                  step = 0.1),
       sliderInput("sale.cost.to.price",
-                  "The ratio of the cost of selling the property (such as the 
+                  "Percentage of the cost of selling the property (such as the 
                   stamp duty tax and the commission fees paid to the real
                   estate agents) to the market price of the property.",
-                  value = 0.05,
-                  min = 0.01,
-                  max = 0.1,
-                  step = 0.001),
+                  value = 5,
+                  min = 1,
+                  max = 10,
+                  step = 0.1),
       sliderInput("rent.to.price",
-                  "The ratio of the gross annual rental income to the market
+                  "Percentage of the gross annual rental income to the market
                   price of the property.",
-                  value = 0.04,
-                  min = 0.01,
-                  max = 0.1,
-                  step = 0.001),
-      sliderInput("hold.cost.to.price",
-                  "The ratio of the total cost of holding the property (such as
-                  the management fees and council rates and etc) to the market 
-                  price of the property.",
-                  value = 0.01,
-                  min = 0.005,
-                  max = 0.03,
-                  step = 0.001),
-      sliderInput("rent.cost.to.rent",
-                  "The ratio of the cost that is paid to the real estate agents
-                  for leasing the property to the gross annual rental income.",
-                  value = 0.085,
+                  value = 4,
                   min = 0,
-                  max = 0.12,
-                  step = 0.001)
+                  max = 15,
+                  step = 0.1),
+      sliderInput("hold.cost.to.price",
+                  "Percentage of the total cost of holding the property (such
+                  as the management fees and council rates and etc) to the  
+                  market price of the property.",
+                  value = 1,
+                  min = 0.3,
+                  max = 3,
+                  step = 0.1),
+      sliderInput("rent.cost.to.rent",
+                  "Percentage of the cost that is paid to the real estate agent
+                  for leasing the property to the gross annual rental income.",
+                  value = 8.5,
+                  min = 0,
+                  max = 12,
+                  step = 0.1)
     ),
     
     
     mainPanel(
       plotOutput("Plots"),
-      strong("Figure 1. The expected annualized rate of return on an investment
+      strong("Figure 1. The simulated annualized rate of return on an investment
              property."),
       br(),
       br(),
-      p("The simulation of the expected annualized rate of return on an
-        investment property (Figure 1) may help an investor to make better
-        decisions in the property market. There are at least 15 manipulable 
-        variables as listed here that may affect the outcome from such an 
-        investment."),
+      p("The simulation of the annualized rate of return on an investment 
+        property (Figure 1) may help an investor to make better decisions in 
+        the property market. There are at least 15 manipulable variables as
+        listed here that may affect the outcome from such an investment."),
       p("Manipulating the variables in the input panel will generate a new
         simulaiton accordingly. The input values will be passed on to the
         server for making calculations, which are described in the following
@@ -312,16 +311,16 @@ server <- function(input, output) {
     investment <- input$investment
     first.home <- input$first.home
     new.home <- input$new.home
-    deposit.ratio <- input$deposit.ratio
-    loan.rate <- input$loan.rate 
+    deposit.ratio <- input$deposit.ratio/100
+    loan.rate <- input$loan.rate/100
     loan.term <- input$loan.term
     payment.frequency <- as.numeric(input$payment.frequency)
     interest.only <- input$interest.only
-    era <- input$expected.rate.of.appreciation
-    scp <- input$sale.cost.to.price
-    rp <- input$rent.to.price 
-    hcp <- input$hold.cost.to.price 
-    rcp <- input$rent.cost.to.rent
+    era <- input$expected.rate.of.appreciation/100
+    scp <- input$sale.cost.to.price/100
+    rp <- input$rent.to.price/100
+    hcp <- input$hold.cost.to.price/100
+    rcp <- input$rent.cost.to.rent/100
     
     # These parameters is used to tune all the function in the server.
     if (F) {
