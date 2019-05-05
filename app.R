@@ -337,7 +337,7 @@ server <- function(input, output) {
       investment = T
       first.home = F
       new.home = F
-      rp = 0.05
+      rp = 0.03
       hcp = 0.01
       rcp = 0.09
       scp = 0.05
@@ -392,9 +392,12 @@ server <- function(input, output) {
       rr.m2[i] <- (rr.a2[i] + 1)^(1/p) - 1
     }
     
+    rr.m1[is.na(rr.m1)] <- min(rr.m1, na.rm = T) # NaN is due to rr.a1 < -1.
+    rr.21[is.na(rr.m2)] <- min(rr.m2, na.rm = T) # NaN is due to rr.a2 < -1.
+    
+    
     # Output plot.
     df <- data.frame(years, rr.a1, rr.m1, rr.a2, rr.m2)
-    df[is.na(df)] <- -1 # rr.m1 may be NA due to rr.a1 < -1.
     x.breaks <- c(seq(from = 0, to = loan.term, by = 2), loan.term)
     y.breaks <- c(seq(from = round(min(df$rr.m2), digits = 2), 
                       to = round(max(df$rr.m2), digits = 2), 
