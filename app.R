@@ -393,8 +393,7 @@ server <- function(input, output) {
     }
     
     rr.m1[is.na(rr.m1)] <- min(rr.m1, na.rm = T) # NaN is due to rr.a1 < -1.
-    rr.21[is.na(rr.m2)] <- min(rr.m2, na.rm = T) # NaN is due to rr.a2 < -1.
-    
+    rr.m2[is.na(rr.m2)] <- min(rr.m2, na.rm = T) # NaN is due to rr.a2 < -1.
     
     # Output plot.
     df <- data.frame(years, rr.a1, rr.m1, rr.a2, rr.m2)
